@@ -112,7 +112,7 @@
         android:layout_marginLeft="24dp"
         android:layout_marginTop="200dp"
         android:text="Time (s):" />
-
+<!--
     <Button
         android:id="@+id/IdTime"
         android:layout_width="wrap_content"
@@ -140,6 +140,7 @@
         android:textColor="@android:color/white"
         app:backgroundTint="#ff8a16"
         android:text="ok" />
+        -->
 
     <Button
         android:id="@+id/IdDescarga"
@@ -203,6 +204,68 @@
         android:layout_marginLeft="137dp"
         android:layout_marginTop="439dp"
         android:text="Retorno" />
+<!--
+    <Button
+        android:id="@+id/btnPrueba"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="14dp"
+        android:layout_marginLeft="14dp"
+        android:layout_below="@id/IdRetorno"
+        android:drawableLeft="@drawable/ic_arrow_upward_black_24dp"
+        android:textColor="@android:color/white"
+        app:backgroundTint="#ffd000"
+        android:text="PRUEBA"
+        tools:layout_editor_absoluteX="167dp"
+        tools:layout_editor_absoluteY="88dp" />
+-->
+    <Spinner
+        android:id="@+id/spinner3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="294dp"
+        android:layout_marginLeft="294dp"
+        android:layout_marginTop="201dp" />
 
+    <Spinner
+        android:id="@+id/spinner4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="290dp"
+        android:layout_marginLeft="290dp"
+        android:layout_marginTop="284dp" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="220dp"
+        android:layout_marginLeft="220dp"
+        android:layout_marginTop="207dp"
+        android:text="Obstaculo:" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="215dp"
+        android:layout_marginLeft="215dp"
+        android:layout_marginTop="280dp"
+        android:text="Bitacora: " />
 
 </RelativeLayout>

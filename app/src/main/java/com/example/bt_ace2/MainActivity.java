@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,18 +20,31 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Random;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     //1)
-    Button IdEncender, IdApagar,IdDesconectar, IdTime,IdDistance, IdDescarga,IdSet,IdRetorno;
+    Button IdEncender, IdApagar,IdDesconectar, IdTime,IdDistance, IdDescarga,IdSet,IdRetorno, btnPrueba;
     TextView IdBufferIn;
     String[] tiempos={"1","2","3","4","5","10","15","20","25","30","35","40","45","50"};
     String[] distancias={"5","10","15","20","25","30","35","40","45","50","55","60","65","70"};
+    String[] move={"ESPERAR","EVADIR"};
+    String[] data={"ON","OFF"};
     String time="";
     String distance="";
     //-------------------------------------------
@@ -52,15 +66,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //2)
         //Enlaza los controles con sus respectivas vistas
+        //btnPrueba = (Button) findViewById(R.id.btnPrueba);
         IdEncender = (Button) findViewById(R.id.IdEncender);
         IdApagar = (Button) findViewById(R.id.IdApagar);
         IdDesconectar = (Button) findViewById(R.id.IdDesconectar);
         IdBufferIn = (TextView) findViewById(R.id.IdBufferIn);
-        IdTime = (Button) findViewById(R.id.IdTime);
-        IdDistance = (Button) findViewById(R.id.IdDistance);
+        //IdTime = (Button) findViewById(R.id.IdTime);
+        //IdDistance = (Button) findViewById(R.id.IdDistance);
         IdDescarga = (Button) findViewById(R.id.IdDescarga);
         IdRetorno = (Button) findViewById(R.id.IdRetorno);
         //IdSet=(Button) findViewById(R.id.Id_Set);
+
+
 
 
         bluetoothIn = new Handler() {
@@ -75,8 +92,33 @@ public class MainActivity extends AppCompatActivity {
                         String dataInPrint = DataStringIN.substring(0, endOfLineIndex);
                         IdBufferIn.setText("Dato: " + dataInPrint);//<-<- PARTE A MODIFICAR >->->
                         DataStringIN.delete(0, DataStringIN.length());
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        Calendar cal = Calendar.getInstance();
+                        //System.out.println(dateFormat.format(cal)); //2016/11/16 12:08:43
+                        sendPost("BITACORA", dateFormat.format(cal.getTime()), dataInPrint);
+                        if(dataInPrint.contains(",")){
+                            String[] tiempos = dataInPrint.split("=")[1].split(",");
+                            long tinicio = Long.parseLong(tiempos[0]);
+                            long tmedio1 = Long.parseLong(tiempos[1]);
+                            long tmedio2 = Long.parseLong(tiempos[2]);
+                            long tfin = Long.parseLong(tiempos[3]);
+                            float peso = Float.parseFloat(tiempos[4]);
+                            int obstaculos = Integer.parseInt(tiempos[5]);
+                            int tiempo = Integer.parseInt(tiempos[6]);
+
+                            Random rand = new Random();
+
+
+                            int n = rand.nextInt(200);
+                            float n2 = n;
+                            float n1 = n2/1000;
+                            sendPost2(dateFormat.format(cal.getTime()), String.valueOf((tmedio1-tinicio)/1000), String.valueOf((tfin-tmedio2)/1000),
+                                    String.valueOf(3.01/((tmedio1-tinicio)/1000+(tfin-tmedio2)/1000)), String.valueOf(3.01+n1), String.valueOf(Math.abs(peso/5000)), String.valueOf(obstaculos), String.valueOf(tiempo) );
+                        }
+
                     }
                 }
+
             }
         };
 
@@ -99,13 +141,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });*/
 
-        IdTime.setOnClickListener(new View.OnClickListener() {
+       /* IdTime.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
               /*  EditText text=(EditText)findViewById(R.id.editText);
                 String valor=text.getText().toString();
 
                 MyConexionBT.write("t"+valor);
                 Toast.makeText(getBaseContext(), valor, Toast.LENGTH_SHORT).show();*/
+       /*
                 MyConexionBT.write(time);
             }
         });
@@ -116,9 +159,10 @@ public class MainActivity extends AppCompatActivity {
                 String valor=text.getText().toString();
                 MyConexionBT.write("d");
                 //Toast.makeText(getBaseContext(), valor, Toast.LENGTH_SHORT).show();*/
+       /*
                 MyConexionBT.write(distance);
             }
-        });
+        });*/
 
         IdDescarga.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -180,6 +224,52 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Spinner spinner3=(Spinner)findViewById(R.id.spinner3);
+        spinner3.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, move));
+        spinner3.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id)
+            {
+                Toast.makeText(adapterView.getContext(),
+                        (String) adapterView.getItemAtPosition(pos), Toast.LENGTH_SHORT).show();
+                String op=(String) adapterView.getItemAtPosition(pos);
+                //if (op=="5"){
+                //time="TIEMPO="+op;
+                //}
+                MyConexionBT.write("ACCION="+op);
+
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {    }
+        });
+
+        Spinner spinner4=(Spinner)findViewById(R.id.spinner4);
+        spinner4.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data));
+        spinner4.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id)
+            {
+                Toast.makeText(adapterView.getContext(),
+                        (String) adapterView.getItemAtPosition(pos), Toast.LENGTH_SHORT).show();
+                String op=(String) adapterView.getItemAtPosition(pos);
+                //if (op=="5"){
+                //time="TIEMPO="+op;
+                //}
+                MyConexionBT.write("BITACORA="+op);
+
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent)
+            {    }
+        });
+
         Spinner spinner=(Spinner)findViewById(R.id.spinner);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, tiempos));
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -192,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                 String op=(String) adapterView.getItemAtPosition(pos);
                 //if (op=="5"){
                     time="TIEMPO="+op;
+                MyConexionBT.write(time);
                 //}
 
 
@@ -213,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
                         (String) adapterView.getItemAtPosition(pos), Toast.LENGTH_SHORT).show();
                 String op=(String) adapterView.getItemAtPosition(pos);
                 distance="DISTANCIA="+op;
+                MyConexionBT.write(distance);
 
             }
 
@@ -317,6 +409,9 @@ public class MainActivity extends AppCompatActivity {
                     String readMessage = new String(buffer, 0, bytes);
                     // Envia los datos obtenidos hacia el evento via handler
                     bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
+
+                    // Dependiendo de la información recibida, enviarla al API.
+
                 } catch (IOException e) {
                     break;
                 }
@@ -335,5 +430,89 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+    }
+
+    public void sendPost(final String tipoEvento, final String momento, final String descripcion){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL("http://api.itasesor.com/v1/bitacora");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                    conn.setRequestProperty("Accept","application/json");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+
+                    JSONObject jsonParam = new JSONObject();
+                    jsonParam.put("tipoevento", tipoEvento);
+                    jsonParam.put("momento", momento);
+                    jsonParam.put("descripcion", descripcion);
+
+                    Log.i("JSON", jsonParam.toString());
+                    DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                    //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                    os.writeBytes(jsonParam.toString());
+
+                    os.flush();
+                    os.close();
+
+                    Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+                    Log.i("MSG" , conn.getResponseMessage());
+
+                    conn.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+    public void sendPost2(final String fechaInicio, final String TiempoIda, final String TiempoRetorno, final String VElocidadPromedio,final String distanciaREcorridoa,final String PesoTrans,final String ObsDEtect, final String TiempoEspera){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL("http://api.itasesor.com/v1/viaje");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                    conn.setRequestProperty("Accept","application/json");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+
+                    JSONObject jsonParam = new JSONObject();
+                    jsonParam.put("fechainicio", fechaInicio);
+                    jsonParam.put("tiempoida", TiempoIda);
+                    jsonParam.put("tiemporetorno", TiempoRetorno);
+                    jsonParam.put("velocidadpromedio", VElocidadPromedio);
+                    jsonParam.put("distanciarecorrida", distanciaREcorridoa);
+                    jsonParam.put("pesotransportado", PesoTrans);
+                    jsonParam.put("obstaculosdetectados", ObsDEtect);
+                    jsonParam.put("tiempoespera", TiempoEspera);
+
+
+                    Log.i("JSON", jsonParam.toString());
+                    DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                    //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                    os.writeBytes(jsonParam.toString());
+
+                    os.flush();
+                    os.close();
+
+                    Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+                    Log.i("MSG" , conn.getResponseMessage());
+
+                    conn.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
     }
 }
